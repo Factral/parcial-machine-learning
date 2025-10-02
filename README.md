@@ -32,4 +32,5 @@ En la app:
 - Configura el modelo, hiperparámetros y entrena. Visualiza métricas, CM, ROC, CV e importancias.
 - Explora los criterios de división (Gini, Gain y Gain Ratio) sobre cualquier variable.
 
+UIS - 2025
 
