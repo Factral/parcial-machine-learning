@@ -8,7 +8,7 @@ import pandas as pd
 import seaborn as sns
 from scipy.stats import chi2_contingency
 
-
+#ESTABLECER ESTILO DE LOS GRAFICOS QUE USEN LA LIBRERIA SEABORN
 def _setup_style() -> None:
     sns.set_theme(style="whitegrid")
     sns.set_palette(["#4F46E5", "#14B8A6", "#F59E0B", "#EF4444", "#10B981"]) 
