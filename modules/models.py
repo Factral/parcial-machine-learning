@@ -9,7 +9,7 @@ import pandas as pd
 import seaborn as sns
 from sklearn import metrics
 from sklearn.compose import ColumnTransformer
-from sklearn.impute import SimpleImputer
+from sklearn.impute import SimpleImputer    #libreria para introducir valores faltantes con un valor fijo (comunmente la media)
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import KFold, StratifiedKFold, cross_val_score, train_test_split
 from sklearn.pipeline import Pipeline
@@ -29,7 +29,7 @@ from sklearn.inspection import permutation_importance
 import plotly.graph_objects as go
 import plotly.express as px
 
-
+#PROCESAR INFORMACIÓN DATA SET: INTRODUCIR VALORES FALTANTES Y NORMALIZAR
 def build_preprocessor(df: pd.DataFrame, target_col: str) -> Tuple[pd.DataFrame, pd.Series, ColumnTransformer]:
     X = df.drop(columns=[target_col])
     y = df[target_col]
@@ -57,7 +57,7 @@ def build_preprocessor(df: pd.DataFrame, target_col: str) -> Tuple[pd.DataFrame,
     )
     return X, y, preprocessor
 
-
+#METODOS Y SUS PARAMETROS (RANGOS)
 def registry(task: str = "classification") -> Dict[str, Dict]:
     if task == "classification":
         return {
@@ -156,7 +156,7 @@ def registry(task: str = "classification") -> Dict[str, Dict]:
         },
     }
 
-
+#DEFINIR VALORES DE LOS METODOS A SELECCIONAR
 def make_estimator(task: str, name: str, params: Dict) -> object:
     reg = registry(task)[name]
     Est = reg["estimator"]
@@ -266,7 +266,7 @@ def plot_roc_auc(estimator: Pipeline, X_test: pd.DataFrame, y_test: pd.Series):
     fig.update_layout(title=f"Curvas ROC OvR (macro AUC {macro_auc:.3f})", xaxis_title="FPR", yaxis_title="TPR", height=480)
     return fig, macro_auc
 
-
+#GRAFICAS DE MODELOS DE REGRESION (PRED VS REAL Y PRED VS RESIDUOS)
 def regression_diagnostics(y_true: pd.Series, y_pred: np.ndarray):
     df_plot = pd.DataFrame({"y_true": y_true, "y_pred": y_pred, "residual": y_true - y_pred})
     # Pred vs true
