@@ -15,7 +15,7 @@ from .data import load_csv, infer_column_types, dataframe_info, missing_summary,
 from .plots import plot_numeric_histograms, plot_categorical_bars, plot_correlation_heatmap, association_matrix
 from .models import registry, train_and_evaluate
 
-
+# FUNCIÓN PARA ESTABLECER QUE COLUMNAS SON VÁLIDAS COMO VARIABLES OBJETIVO
 def _valid_targets_for_task(df: pd.DataFrame, task_key: str) -> list[str]:
     cols: list[str] = []
     n = len(df)
@@ -26,23 +26,23 @@ def _valid_targets_for_task(df: pd.DataFrame, task_key: str) -> list[str]:
         if task_key == "classification":
             nun = int(s.nunique(dropna=True))
             if nun < 2:
-                continue
+                continue                     #FILA CON VALORES UNICOS MENOORES A 2 SE DESCARTAN
             vc = s.astype(str).value_counts(dropna=True)
             if vc.min() < 2:
-                continue
+                continue                    #CATEGORIAS CON VARIABLES UNICAS CON UNA FRECUENCIA MENOR A 2 SE DESCARTAN
             if (not pd.api.types.is_numeric_dtype(s)) or nun <= 20 or nun <= max(5, int(0.05 * n)):
-                cols.append(c)
+                cols.append(c)               # COLUMNAS ACEPTADAS COMO CATEGORICAS
         else:
             if pd.api.types.is_numeric_dtype(s) and int(s.nunique(dropna=True)) >= 5:
-                cols.append(c)
+                cols.append(c)                # COLUMNAS ACEPTADAS COMO NUMERICAS
     return cols
 
 
 def _max_cv_folds_for_target(df: pd.DataFrame, target_col: str, task_key: str) -> int:
     if task_key != "classification":
-        return 10
-    vc = df[target_col].astype(str).value_counts(dropna=True)
-    return int(vc.min()) if not vc.empty else 0
+        return 10                            
+    vc = df[target_col].astype(str).value_counts(dropna=True)         #CONTEO DE VARIABLES CATEGORICAS OBJETIVO
+    return int(vc.min()) if not vc.empty else 0                        #FOLDS DEL CV NO PUEDE SER MAYOR A LA CANTIDAD DE VARIABLES DE UNA CATEGORÍA (DEBE EXISTIR AL MENOS UNA VARIBALE EN CADA FOLD)
 
 
 def _load_demo_dataset() -> pd.DataFrame:
@@ -53,14 +53,14 @@ def _load_demo_dataset() -> pd.DataFrame:
     df.rename(columns={"target": "target"}, inplace=True)
     return df
 
-
+#SI NO HAY DATA SET MOSTRAR MENSAJE DE CARGAR DATA SET
 def _get_df() -> pd.DataFrame:
     df = st.session_state.get("df", pd.DataFrame())
     if df.empty:
         st.info("Carga un CSV o usa el dataset de demostración en la barra lateral.")
     return df
 
-
+#MANTENER EL DATASET CARGADO DURANTE LA EJECUCIÓN DE LA APLICACIÓN PARA NO TENER QUE ESTAR CARGANDO ESTE EN CADA MOMENTO
 def _handle_file_upload():
     """Callback for file upload to trigger immediate update"""
     if st.session_state.uploaded_file is not None:
@@ -68,14 +68,14 @@ def _handle_file_upload():
         st.session_state.dataset_name = getattr(st.session_state.uploaded_file, "name", "dataset.csv")
         st.session_state.file_processed = True
 
-
+#MISMO ANTERIOR CON LOS DATA DEMO
 def _handle_demo_load():
     """Callback for demo dataset load"""
     st.session_state.df = _load_demo_dataset()
     st.session_state.dataset_name = "breast_cancer_demo.csv"
     st.session_state.file_processed = True
 
-
+#BLOQUES DE CARGA DEL DATA Y DATA DEMO (3 COLUMNAS)
 def page_data_eda() -> None:
     # Initialize session state
     if 'file_processed' not in st.session_state:
@@ -124,7 +124,7 @@ def page_data_eda() -> None:
     st.markdown("---")
 
     num_cols, cat_cols = infer_column_types(df)
-    h, t, desc = head_tail_describe(df)
+    h, t, desc = head_tail_describe(df)    #PRIMERAS (t) Y ULTIMOS 10 FILAS (h) E INFORMACION DESCRIPTIVA (DESC)
 
     # Dashboard header
     ds_name = st.session_state.get("dataset_name", "dataset.csv")
@@ -145,11 +145,11 @@ def page_data_eda() -> None:
         "únicos": [df[c].nunique(dropna=True) for c in df.columns],
     })
     info_df = info_df.sort_values("% faltantes", ascending=False).reset_index(drop=True)
-
+    
     st.markdown("#### Vista rápida y esquema")
     st.dataframe(h, width='stretch')
     with st.expander("Esquema de columnas"):
-        st.dataframe(info_df, width='stretch')
+        st.dataframe(info_df, width='stretch')   #INFORMACIÓN DE CADA CATEGORÍA DEL DATA SET 
     with st.expander("Estadísticos descriptivos"):
         st.dataframe(desc, width='stretch')
     with st.expander("Valores faltantes (detalles)"):
@@ -159,7 +159,7 @@ def page_data_eda() -> None:
     tabs = st.tabs(["Histogramas", "Barras", "Correlación"]) 
     with tabs[0]:
         if num_cols:
-            col_sel = st.multiselect("Variables numéricas", num_cols, default=num_cols[: min(5, len(num_cols))])
+            col_sel = st.multiselect("Variables numéricas", num_cols, default=num_cols[: min(5, len(num_cols))])   #BARRA DE SELECCIÓN DE VARIABLES A GRAFICAR
             for col in col_sel:
                 fig = px.histogram(df, x=col, nbins=30, opacity=0.9, color_discrete_sequence=["#4F46E5"])
                 fig.update_layout(height=320, template="plotly_white")
@@ -168,7 +168,7 @@ def page_data_eda() -> None:
             st.info("No hay variables numéricas para graficar.")
     with tabs[1]:
         if cat_cols:
-            col_sel = st.multiselect("Variables categóricas", cat_cols, default=cat_cols[: min(5, len(cat_cols))])
+            col_sel = st.multiselect("Variables categóricas", cat_cols, default=cat_cols[: min(5, len(cat_cols))])    #BARRA DE SELECCIÓN DE VARIABLES A GRAFICAR
             # Determine max categories dynamically based on current selection
             if col_sel:
                 max_cats = max(int(df[c].astype(str).nunique(dropna=True)) for c in col_sel)
@@ -176,7 +176,7 @@ def page_data_eda() -> None:
                 max_cats = max(int(df[c].astype(str).nunique(dropna=True)) for c in cat_cols) if cat_cols else 3
             max_cats = max(1, max_cats)
             default_top = min(12, max_cats)
-            top_n = st.slider("Top categorías", 1, int(max_cats), int(default_top))
+            top_n = st.slider("Top categorías", 1, int(max_cats), int(default_top))     #CATEGORIAS A MOSTRAR, 12 O MAX DE CATEGORIAS DE LOS DATA SET
             for col in col_sel:
                 vc = df[col].astype(str).value_counts().nlargest(top_n).reset_index()
                 vc.columns = [col, "Frecuencia"]
@@ -192,7 +192,7 @@ def page_data_eda() -> None:
         fig.update_layout(height=650, template="plotly_white")
         st.plotly_chart(fig, use_container_width=True)
 
-
+#DEL MODELO SELECCIONADO Y DE LOS PARAMETROS DEFINIDOS DE ESTE (REGISTRY) SE CREAN LAS OPCIONES INTERACTIVAS PARA MODIFICARLOS
 def _render_params_controls(name: str, task: str) -> Dict[str, Any]:
     cfg = registry(task)[name]
     st.caption(cfg["help"])
@@ -216,8 +216,8 @@ def page_modeling() -> None:
     df = _get_df()
     if df.empty:
         return
-
-    st.markdown("### Configuración de modelo")
+                                                        
+    st.markdown("### Configuración de modelo")                    #RANGOS Y VALORES DE LAS MULTIPLES OPCIONES LISTADAS
     cols = st.columns([1, 1, 1, 1, 1])
     with cols[0]:
         task = st.selectbox("Tarea", ["Clasificación", "Regresión"], index=0)
@@ -259,7 +259,7 @@ def page_modeling() -> None:
             cv_folds=cv_folds,
             task=task_key,
         )
-
+    
     # Persist trained pipeline and feature metadata for inference page
     X_cols = [c for c in df.columns if c != target_col]
     X_only = df[X_cols]
@@ -382,7 +382,7 @@ def page_modeling() -> None:
         st.plotly_chart(fig_imp, use_container_width=True, key="feature_importances")
 
 
-
+#PESTAÑA INFERENCIA
 def page_inference() -> None:
     st.markdown("### 🧪 Inferencia")
     pipe = st.session_state.get("trained_pipeline")
@@ -443,9 +443,9 @@ def page_inference() -> None:
     if task == "classification":
         st.success(f"Predicción: {y_pred}")
         prob_fig = None
-        try:
-            if hasattr(pipe, "predict_proba"):
-                prob = pipe.predict_proba(x_new)[0]
+        try:          
+            if hasattr(pipe, "predict_proba"):                   # MOSTRAR GRAFICOS DE PROBABILIDADES OBTENIDAS EN CADA CLASE O VARIABLE
+                prob = pipe.predict_proba(x_new)[0]         
                 classes = list(getattr(pipe, "classes_", [str(i) for i in range(len(prob))]))
                 prob_df = pd.DataFrame({"clase": classes, "prob": prob})
                 prob_fig = px.bar(prob_df, x="clase", y="prob", color="prob", color_continuous_scale="Viridis")
