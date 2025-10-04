@@ -52,7 +52,7 @@ def gain_ratio(parent: pd.Series, left: pd.Series, right: pd.Series) -> float:
         return 0.0
     return float(ig / si)
 
-
+#ESTIMAR EL MEJOR PUNTO DE CORTE DE LAS VARIABLES NUMERICAS EN LOS ARBOLES DE DECISIÓN
 def best_split_numeric(x: pd.Series, y: pd.Series, min_leaf: int = 1) -> Optional[Dict]:
     df = pd.DataFrame({"x": x, "y": y}).dropna()
     df = df.sort_values("x")
@@ -94,7 +94,7 @@ def best_split_numeric(x: pd.Series, y: pd.Series, min_leaf: int = 1) -> Optiona
         "figure": fig,
     }
 
-
+#ESTIMAR EL MEJOR PUNTO DE CORTE DE LAS VARIABLES CATEGORÍCAS EN LOS ARBOLES DE DECISIÓN
 def best_split_categorical(x: pd.Series, y: pd.Series, min_leaf: int = 1) -> Optional[Dict]:
     df = pd.DataFrame({"x": x.astype(str), "y": y}).dropna()
     cats = df["x"].unique()
